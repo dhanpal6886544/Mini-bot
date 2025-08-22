@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mini Bot 🤖</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      background: #4CAF50;
+      color: white;
+      padding: 10px;
+      margin: 0;
+    }
+    #chatbox {
+      width: 90%;
+      max-width: 400px;
+      height: 400px;
+      border: 1px solid #ccc;
+      margin: 20px auto;
+      background: white;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #userInput {
+      width: 70%;
+      padding: 10px;
+    }
+    #sendBtn {
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mini Bot 🤖</h1>
+  <div id="chatbox"></div>
+  <input id="userInput" type="text" placeholder="Type a message..." />
+  <button id="sendBtn">Send</button>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    function addMessage(sender, text) {
+      let msg = document.createElement("p");
+      msg.innerHTML = `<b>${sender}:</b> ${text}`;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    sendBtn.onclick = async () => {
+      let message = userInput.value;
+      if (!message) return;
+      addMessage("You", message);
+      userInput.value = "";
+
+      let response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+
+      let data = await response.json();
+      addMessage("Bot", data.reply);
+    };
+  </script>
+</body>
+</html>
