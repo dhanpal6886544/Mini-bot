@@ -1,43 +1,78 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from datetime import datetime
-import random
+import random, datetime
 
 app = FastAPI()
 
-# Bot ka dimag (questions -> answers)
-brain = {
-    "hello": ["Hi! Kaise ho?", "Hello ji 👋", "Namaste 🙏"],
-    "hi": ["Hi there!", "Hii 👋", "Arey Hii!"],
-    "bye": ["Goodbye! Fir milte hain.", "Bye bye 👋", "Phir aana!"],
-    "time": [f"Abhi time ho raha hai {datetime.now().strftime('%H:%M:%S')}"],
-    "name": ["Mera naam Mini Bot hai 🤖", "Main Mini Bot hoon", "Mini Bot present!"],
-    "how are you": ["Main theek hoon 😃, tum kaise ho?", "Mast chal raha hai! Aur tum?"],
-    "love": ["Love ❤️ ek pyari feeling hai!", "Mujhe bhi tumse pyaar hai 😍"],
-    "joke": ["Teacher: Tum late kyu aaye? \nStudent: Sir, exam dene aa raha tha, raste me exam hi mil gaya 😅",
-             "Ek aadmi doctor ke paas gaya: 'Doctor sahab, mujhe bhoolne ki bimaari hai.' \nDoctor: 'Kab se?' \nAadmi: 'Kab se kya?' 😂"]
-}
+# Bot ka dimag (knowledge base)
+def bot_brain(q: str) -> str:
+    q = q.lower()
 
-# Chat endpoint
+    # Greetings
+    if "hello" in q or "hi" in q:
+        return "Hi there! 😊 Kaise ho?"
+    elif "bye" in q:
+        return "Goodbye! Fir milte hain 👋"
+
+    # Name
+    elif "your name" in q:
+        return "Mera naam Mini Bot 🤖 hai."
+
+    # Time
+    elif "time" in q:
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+        return f"Abhi ka time hai: {now} ⏰"
+
+    # Date
+    elif "date" in q:
+        today = datetime.date.today().strftime("%d-%m-%Y")
+        return f"Aaj ki date hai: {today} 📅"
+
+    # Jokes
+    elif "joke" in q:
+        jokes = [
+            "Teacher: Tum late kyu aaye? Student: Sir, sapne me cricket khel raha tha. Umpire out nahi kar raha tha isliye jag nahi paya. 😂",
+            "Doctor: Tumhe kya problem hai? Patient: Mujhe sab kuch bhoolne ki bimari hai. Doctor: Kab se? Patient: Kab se kya? 🤔",
+            "Ek aadmi restaurant gaya aur bola: 'Ek plate samosa dena, aur uske saath ek selfie bhi!' 🤳😂"
+        ]
+        return random.choice(jokes)
+
+    # Study / GK
+    elif "capital of india" in q:
+        return "India ki capital New Delhi hai 🇮🇳"
+    elif "prime minister" in q:
+        return "Bharat ke Pradhan Mantri Narendra Modi ji hain."
+    elif "2+2" in q:
+        return "2 + 2 = 4 🔢"
+    elif "earth" in q:
+        return "Earth humara planet hai jo Suraj se 3rd number par hai 🌍"
+
+    # Sports
+    elif "cricket" in q:
+        return "Mujhe bhi cricket pasand hai 🏏! Tumhe konsa player pasand hai?"
+    elif "football" in q:
+        return "Football duniya ka sabse popular game hai ⚽"
+
+    # Motivation
+    elif "motivate" in q or "inspire" in q:
+        quotes = [
+            "Hard work beats talent when talent doesn’t work hard. 💪",
+            "Har din naya moka hai kuch naya karne ka! 🌟",
+            "Jo sapne dekhte hain, wahi unhe poora karte hain 🚀"
+        ]
+        return random.choice(quotes)
+
+    # Default fallback
+    else:
+        return f"Tumne bola: '{q}' — mujhe abhi ye samajhna nahi aaya 🤔"
+
+# Chat API
 @app.get("/chat")
 def chat(q: str):
-    q_lower = q.lower()
-    reply = None
-    
-    # Brain se match karo
-    for key in brain:
-        if key in q_lower:
-            reply = random.choice(brain[key])
-            break
-    
-    # Agar samajh na aaye
-    if not reply:
-        reply = f"Mujhe samajh nahi aaya: {q}"
-    
+    reply = bot_brain(q)
     return {"reply": reply}
 
-
-# Chatbot UI
+# Web UI
 @app.get("/", response_class=HTMLResponse)
 def home():
     html_code = """
@@ -47,8 +82,9 @@ def home():
         <title>Mini Bot 🤖</title>
         <style>
             body { font-family: Arial; background: #f0f0f0; }
-            #chat { width: 300px; height: 400px; border: 1px solid #ccc; 
-                    overflow-y: auto; background: #fff; margin: 20px auto; padding: 10px; }
+            #chat { width: 320px; height: 400px; border: 1px solid #ccc; 
+                    background: #fff; margin: 20px auto; padding: 10px; 
+                    overflow-y: auto; }
             input { width: 240px; padding: 5px; }
             button { padding: 6px; }
         </style>
@@ -60,11 +96,9 @@ def home():
             <input id="msg" type="text" placeholder="Type a message...">
             <button onclick="sendMsg()">Send</button>
         </div>
-
         <script>
             async function sendMsg() {
                 let msg = document.getElementById("msg").value;
-                if (!msg) return;
                 let chatBox = document.getElementById("chat");
                 chatBox.innerHTML += "<b>You:</b> " + msg + "<br>";
                 let res = await fetch(`/chat?q=${encodeURIComponent(msg)}`);
