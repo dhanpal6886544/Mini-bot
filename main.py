@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, jsonify
-import openai
+from openai import OpenAI
 import os
 
 app = Flask(__name__)
 
-# OpenAI API key set karo
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# OpenAI client setup
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route("/")
 def home():
@@ -16,15 +16,15 @@ def chat():
     user_message = request.form["message"]
 
     try:
-        # GPT se response lo
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",   # ya gpt-4 agar tumhare pass access hai
+        # New API call
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",   # ya gpt-4 agar access hai
             messages=[
                 {"role": "system", "content": "You are a helpful AI assistant."},
                 {"role": "user", "content": user_message}
             ]
         )
-        bot_reply = response["choices"][0]["message"]["content"]
+        bot_reply = response.choices[0].message.content
 
     except Exception as e:
         bot_reply = f"Error: {str(e)}"
