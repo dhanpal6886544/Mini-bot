@@ -1,23 +1,56 @@
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+
+app = FastAPI()
+
+@app.get("/", response_class=HTMLResponse)
+def webchat():
+    html_code = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Mini Bot 🤖</title>
+        <style>
+            body { font-family: Arial; background: #f0f0f0; }
+            #chat { width: 300px; height: 400px; border: 1px solid #ccc; overflow-y: auto; background: #fff; margin: 20px auto; padding: 10px; }
+            input { width: 240px; padding: 5px; }
+            button { padding: 6px; }
+        </style>
+    </head>
+    <body>
+        <div align="center"><h2>Mini Bot 🤖</h2></div>
+        <div id="chat"></div>
+        <div align="center">
+            <input id="msg" type="text" placeholder="Type a message...">
+            <button onclick="sendMsg()">Send</button>
+        </div>
+
+        <script>
+            async function sendMsg() {
+                let msg = document.getElementById("msg").value;
+                if (!msg) return;
+                let chatBox = document.getElementById("chat");
+                chatBox.innerHTML += "<b>You:</b> " + msg + "<br>";
+                let res = await fetch(window.location.origin + "/chat?q=" + encodeURIComponent(msg));
+                let data = await res.json();
+                chatBox.innerHTML += "<b>Bot:</b> " + data.reply + "<br>";
+                document.getElementById("msg").value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_code)
+
+
 @app.get("/chat")
 def chat(q: str):
-    q = q.lower().strip()
-
-    if "hello" in q or "hi" in q:
-        return {"reply": "Hi! Kaise ho?"}
-    elif "bye" in q:
-        return {"reply": "Goodbye! Fir milte hain."}
-    elif "time" in q:
-        from datetime import datetime
-        return {"reply": f"Abhi ka time hai: {datetime.now().strftime('%H:%M:%S')}"}
-    elif "name" in q:
+    if "hello" in q.lower():
+        return {"reply": "Hi! How are you?"}
+    elif "bye" in q.lower():
+        return {"reply": "Goodbye! Fir milte hain 🙂"}
+    elif "name" in q.lower():
         return {"reply": "Mera naam Mini Bot hai 🤖"}
-    elif "love" in q:
-        return {"reply": "Mujhe pyaar ki samajh nahi hai, par dosti pakki hai 💙"}
-    elif "joke" in q:
-        return {"reply": "Ek joke suno: Teacher: Tum late kyu aaye? Student: Sir ghadi hi ruk gayi thi! Teacher: Toh tumne ghadi kyu nahi chalayi? Student: Sir, ghadi to diwar pe lagi thi 😂"}
-    elif "help" in q:
-        return {"reply": "Main tumhari help karne ke liye yahan hoon. Bas apna sawal pucho ✅"}
-    elif "weather" in q:
-        return {"reply": "Mujhe abhi live weather nahi pata, lekin tum Google me search kar sakte ho ☁️"}
     else:
-        return {"reply": f"Mujhe samajh nahi aaya: '{q}'"}
+        return {"reply": f"Tumne bola: {q}"}
