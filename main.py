@@ -16,11 +16,11 @@ def chat():
     user_message = request.form["message"]
 
     try:
-        # New API call
+        # New API call (OpenAI v1.0+)
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",   # ya gpt-4 agar access hai
+            model="gpt-3.5-turbo",   # ya "gpt-4" agar tumhare paas access hai
             messages=[
-                {"role": "system", "content": "You are a helpful AI assistant."},
+                {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": user_message}
             ]
         )
